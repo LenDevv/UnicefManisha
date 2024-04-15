@@ -1,0 +1,108 @@
+---
+title: "UNICEF Organisation"
+author: "MANISHA GURJAR"
+format: html
+# editor: visual
+---
+
+
+
+```{r}
+#| label: setup
+#| include: false
+#| echo: false
+#| warning: false
+#| message: false
+
+install.packages("tidyverse")
+install.packages("maps") 
+
+library(tidyverse)
+
+indicator_1 <- read.csv("unicef_indicator_1.csv")
+indicator_2 <- read.csv("unicef_indicator_2.csv")
+metadata <- read.csv("unicef_metadata.csv")
+
+# Merge datasets 
+merged_data <- merge(indicator_1, indicator_2, by = "country")
+
+options(scipen=999)
+
+```
+
+
+## **Visualizations**
+
+Dataset
+: The metadata dataset, which most likely contains information on a range of demographic variables, including the overall population, recorded over several years, is the source of the visualization's data. 
+
+Time-Series Plot
+: The time-series plot, which shows the trend of the entire population over time by connecting data points with lines, is the central component of the visualisation. The y-axis indicates the appropriate total population figures (Population..total), while the x-axis shows the years (year
+Line Geometry: To emphasize the continuity and evolution of population changes over time, lines are drawn between the data points using the geom_line() tool. 
+
+Labels and Titles
+: To improve understanding and clarity, the chart has been furnished with descriptive labels and titles. The title of the chart, Time Series of Total Population, provides a concise summary of the data it displays, while the labels on the y- and x-axes, Population, total, and Year, respectively, give context for the data that is shown.
+
+### Visualization 1: World Map Chart - Life Expectancy
+
+```{r}
+#| warning: false
+#| message: false
+
+# Visualization 1: World Map Chart - Population
+world_map_data <- map_data("world")
+
+ind_data_2018 <- metadata %>%
+  filter(year == 2018) %>%
+  mutate(region = ifelse(country == "United States", "USA", country))
+
+map_data_2018 <- full_join(world_map_data, ind_data_2018)
+
+ggplot(map_data_2018) + 
+  aes(long, lat, group = group, fill = Life.expectancy.at.birth..total..years.) + 
+  geom_polygon() +
+  scale_fill_gradient(low = "darkred", high = "mistyrose", na.value = "grey") +
+  theme_bw() + 
+  labs(
+    title = "Life Expectancy at Birth across the world in 2018",
+    x = "Countries",
+    y = "Life Expectamcy",
+    fill = "Life Expectancy"
+  )
+
+```
+
+### Visualization 2: Bar Chart
+
+```{r}
+bar_chart <- ggplot(data = indicator_1) + geom_bar(aes(x = country, y = obs_value), stat = "identity") + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+
+print(bar_chart)
+
+```
+
+### Visualization 3: Scatterplot with Linear Regression Line
+
+```{r}
+scatterplot <- ggplot(data = indicator_2) + geom_point(aes(x = time_period, y = obs_value), alpha = 0.5) + geom_smooth(aes(x = time_period, y = obs_value), method = "lm", se = FALSE) 
+
+print(scatterplot)
+
+```
+
+### Visualization 4: Time-series Chart
+
+```{r}
+time_series <- ggplot(data = metadata, aes(x = year, y = Population..total)) + geom_line() + labs(y = "Population, total", x = "Year") + ggtitle("Time Series of Total Population") 
+
+print(time_series)
+```
+
+
+
+### **Interpretation** 
+Viewers can identify patterns, trends, and variations in the overall population over time by analyzing the time-series graphic. Significant population increase or fall over particular eras is indicated by sharp inclines or declines in the line, whilst generally stable portions represent periods of demographic stability.
+
+### **Conclusion and Recommendations**
+Finally, the combination of these visualisations offers a thorough grasp of all the different aspects of our data environment. The globe map visualisation, which shows how landmasses and bodies of water are distributed throughout various regions, establishes the fundamental knowledge of global geography. It acts as a blank canvas for additional analysis to be constructed upon. By navigating to the bar chart, we can see observations broken down by country, which helps us spot trends and possible areas for development or intervention. Simultaneously, a scatterplot using a linear regression line offers a refined perspective on the temporal patterns and associations across variables across time. Making sense of patterns and correlations with the aid of this dynamic representation facilitates predictive analysis and well-informed decision-making. Lastly, the time-series graphic explores population dynamics across space and time, providing long-term trend insights. We can extract practical suggestions by combining these visualizations. First, based on the observed discrepancies displayed in the bar chart, comprehensive country studies can be conducted to identify underlying causes and guide focused solutions. Second, additional regression analysis of the scatterplot's temporal trends can help us better understand the links between the various variables and make more precise predictions. Thirdly, demographic forecasting and well-informed planning to properly accommodate population fluctuations are made possible by utilizing insights from the time-series chart. Finally, making sure that conclusions are validated and cross-referenced across visualizations promotes thorough analysis and evidence-based decision-making. Through the strategic application of each visualization's unique strengths and insights, we may effectively navigate intricate phenomena, promote constructive change, and arrive at well-informed judgments that have a lasting impact on society.
+
